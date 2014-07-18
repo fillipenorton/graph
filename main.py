@@ -59,7 +59,7 @@ class Application(object):
 		for r in self.vertices.keys():
 			if self.vertices[r] % 2 != 0:
 				odd_count += 1
-			if odd_count > 2:
+			if odd_count >= 1:
 				print 'Nao eh euleriano'
 				return False
 		print 'Eh euleriano'
@@ -70,7 +70,7 @@ class Application(object):
 			print 'index: %s | destinos: %s | pesos: %s' % (k, self.records[k].destinos, self.records[k].pesos)
 		
 		for v in self.vertices.keys():
-			print 'index: %s | grau: %s' % (v, self.vertices[v])
+			print 'vertice: %s | grau: %s' % (v, self.vertices[v])
 	
 app = Application()
 app.init()
