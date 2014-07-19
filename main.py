@@ -6,6 +6,7 @@ class Node(object):
 class Application(object):
   records = {}
   vertices = {}
+  vertices_degree = {}
 
   def init(self):
     while True:
@@ -14,7 +15,7 @@ class Application(object):
         self.printar()
         break
       elif v1 == -2:
-        self.is_eulerian_trail()
+        self.is_eulerian()
       v2 = int(raw_input())
       peso = int(raw_input())
 
@@ -54,16 +55,64 @@ class Application(object):
       return True
     return False
 
-  def is_eulerian_trail(self):
-    odd_count = 0
+  def is_eulerian(self):
     for r in self.vertices.keys():
       if self.vertices[r] % 2 != 0:
-        odd_count += 1
-      if odd_count >= 1:
-        print 'Nao eh euleriano'
         return False
-    print 'Eh euleriano'
     return True
+
+  # if not self.is_eulerian()
+  #   return False
+
+  def fleury(self, C=[], graph=None, v0=None):
+    if not graph:
+      graph = self.records
+      v0 = graph.itervalues().next()
+      C = [v0]
+      self.vertices_degree = self.vertices
+
+    if v0 in graph.keys():
+      for v in graph[v0].destinos:
+        graph_aux = graph
+        graph_aux = graph_aux[v0].destinos.remove(v)
+        if len(graph[v0].destinos) == 1 or not self.is_disconnect(v0, v, graph_aux):
+          C.append(v)
+          index = graph[v0].destinos.index(v)
+          graph[v0].destinos.remove(v)
+          graph[v0].pesos.pop(index)
+          self.fleury(C=C, graph=graph, v0=v)
+          break
+    else:
+      for key in graph.keys():
+        if v0 in graph[key].destinos:
+          graph_aux = graph
+          graph_aux = graph_aux[key].destinos.remove(v0)
+          if self.vertices_degree[v0] == 1 or not self.is_disconnect(v0, key, graph_aux):
+            C.append(key)
+            index = graph[key].destinos.index(v0)
+            graph[key].destinos.remove(v0)
+            graph[key].pesos.pop(index)
+            self.fleury(C=C, graph=graph, v0=key)
+            break
+    return C
+
+  def is_disconnect(origem, destino, graph, past=None):
+    if origem in graph.keys():
+      for g in graph[origem].destinos:
+        if g == destino:
+          return True
+        else:
+          self.is_disconnect(g, destino, graph, past=origem)
+    else:
+      for key in graph.keys():
+        if key != past:
+          if origem in graph[key].destinos:
+            if key == destino:
+              return True
+            else:
+              self.vertices_degree[key] -= 1
+              graph[key].destinos.remove(origem)
+              self.is_disconnect(key, destino, graph)
 
   def printar(self):
     for k in self.records.keys():
