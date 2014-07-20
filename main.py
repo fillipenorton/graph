@@ -1,3 +1,4 @@
+import copy
 
 class Node(object):
   destinos = []
@@ -15,7 +16,11 @@ class Application(object):
         self.printar()
         break
       elif v1 == -2:
-        self.is_eulerian()
+        if self.is_eulerian():
+          self.eu_trail()
+        else:
+          print 'Is NOT Eulerian'
+          return 
       v2 = int(raw_input())
       peso = int(raw_input())
 
@@ -64,55 +69,88 @@ class Application(object):
   # if not self.is_eulerian()
   #   return False
 
-  def fleury(self, C=[], graph=None, v0=None):
+  def eu_trail(self, C=[], graph=None, v0=None):
     if not graph:
-      graph = self.records
-      v0 = graph.itervalues().next()
+      graph = copy.deepcopy(self.records)
+      v0 = graph.keys()[0]
       C = [v0]
-      self.vertices_degree = self.vertices
+      self.vertices_degree = copy.deepcopy(self.vertices)
 
     if v0 in graph.keys():
       for v in graph[v0].destinos:
-        graph_aux = graph
-        graph_aux = graph_aux[v0].destinos.remove(v)
-        if len(graph[v0].destinos) == 1 or not self.is_disconnect(v0, v, graph_aux):
+        # import pdb;pdb.set_trace()
+        graph_aux = copy.deepcopy(graph)
+        graph_aux[v0].destinos.remove(v)
+        if v0 == 4 and v == 3:
+          import pdb;pdb.set_trace()
+
+        if len(graph[v0].destinos) == 1:
+          print 'Inseriu por causa do length'
           C.append(v)
           index = graph[v0].destinos.index(v)
           graph[v0].destinos.remove(v)
           graph[v0].pesos.pop(index)
-          self.fleury(C=C, graph=graph, v0=v)
+          self.eu_trail(C=C, graph=graph, v0=v)
+          break
+
+        if not self.disconnect(origem=v0, destino=v, graph=graph_aux):
+          print 'Inseriu pq nao desconecta'
+          C.append(v)
+          index = graph[v0].destinos.index(v)
+          graph[v0].destinos.remove(v)
+          graph[v0].pesos.pop(index)
+          self.eu_trail(C=C, graph=graph, v0=v)
           break
     else:
       for key in graph.keys():
         if v0 in graph[key].destinos:
-          graph_aux = graph
-          graph_aux = graph_aux[key].destinos.remove(v0)
-          if self.vertices_degree[v0] == 1 or not self.is_disconnect(v0, key, graph_aux):
-            C.append(key)
-            index = graph[key].destinos.index(v0)
-            graph[key].destinos.remove(v0)
-            graph[key].pesos.pop(index)
-            self.fleury(C=C, graph=graph, v0=key)
-            break
+          for i in graph[key].destinos:
+            graph_aux = copy.deepcopy(graph)
+            graph_aux = graph_aux[key].destinos.remove(v0)
+            if (self.vertices_degree[v0] == 1 or not self.disconnect(i, key, graph_aux)):
+              C.append(key)
+              index = graph[key].destinos.index(v0)
+              graph[key].destinos.remove(v0)
+              graph[key].pesos.pop(index)
+              self.eu_trail(C=C, graph=graph, v0=key)
+              break
+
+    import pdb;pdb.set_trace()
     return C
 
-  def is_disconnect(origem, destino, graph, past=None):
+  def disconnect(self, origem, destino, graph, past=None, start=None):
+    # import pdb;pdb.set_trace()
+    print 'origem: %s destino %s' % (origem,destino)
+    if not graph:
+      if origem == destino:
+        print 'return true'
+        return True
+      else:
+        print 'return false'
+        return False
+
     if origem in graph.keys():
       for g in graph[origem].destinos:
         if g == destino:
-          return True
+          return False
         else:
-          self.is_disconnect(g, destino, graph, past=origem)
-    else:
+          if len(graph[origem].destinos) == 1:
+            graph[origem].destinos.remove(g)
+            self.vertices_degree[origem] -= 1
+          elif len(graph[origem].destinos) == 0:
+            return True
+          self.disconnect(g, destino, graph, past=origem)
+    else: # elemento nao faz parte do nivel 1
       for key in graph.keys():
         if key != past:
           if origem in graph[key].destinos:
             if key == destino:
-              return True
+              return False
             else:
               self.vertices_degree[key] -= 1
+              print '(3) origem %s key %s' % (origem, key)
               graph[key].destinos.remove(origem)
-              self.is_disconnect(key, destino, graph)
+              self.disconnect(key, destino, graph)
 
   def printar(self):
     for k in self.records.keys():
