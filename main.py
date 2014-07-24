@@ -22,7 +22,7 @@ class Application(object):
         else:
           print 'Is NOT Eulerian'
           return
-      elif v1 == -3
+      elif v1 == -3:
         o,f = self.check_odd()
         self.opt_trail(origin=o,final=f)
         return
@@ -193,7 +193,7 @@ class Application(object):
           graph_d[key].destinos.remove(origem)
           return self.not_disconnect(origem=key, destino=destino, graph_d=graph_d)
 
-  def dijkstra(origin,final=None):
+  def dijkstra(self, origin,final=None):
     D = {}  # dictionary of final distances
     P = {}  # dictionary of predecessors
     Q = OrderedDict()   # est.dist. of non-final vert.
@@ -203,10 +203,11 @@ class Application(object):
       D[v] = Q[v]
       if v == final:
         break
-
-      for w in self.records[v]:
+      
+      import pdb;pdb.set_trace()
+      for w in self.records[v].destinos:
         index = self.records[v].destinos.index(w)
-        weight = D[v] + self.records[v].pesos(index)
+        weight = D[v] + self.records[v].pesos[index]
     
         if w not in Q or weight < Q[w]:
           Q[w] = weight
@@ -214,7 +215,7 @@ class Application(object):
     
     return P
   
-  def opt_trail(origin,final):
+  def opt_trail(self, origin,final):
     P = self.dijkstra(origin,final)
     trail = []
     while True:
