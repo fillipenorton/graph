@@ -103,17 +103,19 @@ class Application(object):
           print 'Inseriu pq tem apenas um destino'
           v = graph[v0].destinos[0]
           C.append(v)
-          index = graph[v0].destinos.index(0)
+          index = graph[v0].destinos.index(v)
           graph[v0].destinos.remove(v)
           graph[v0].pesos.pop(index)
           self.countdown_degree(v1=v0, v2=v)
           self.eu_trail(C=C, graph=graph, v0=v)
       else: 
+        graph_aux = copy.deepcopy(graph) # deep copy to pass graph_aux per params
         for v in graph[v0].destinos:
-          graph_aux = copy.deepcopy(graph) # deep copy to pass graph_aux per params
+          #import pdb;pdb.set_trace()
           graph_aux[v0].destinos.remove(v)
           print 'enviou pro not_disconnect [1]'
-          if self.not_disconnect(origem=v0, destino=v, graph_d=graph_aux):
+          graph_d = copy.deepcopy(graph_aux)
+          if self.not_disconnect(origem=v0, destino=v, graph_d=graph_d):
             print 'Inseriu pq nao desconecta'
             C.append(v)
             index = graph[v0].destinos.index(v)
@@ -165,7 +167,7 @@ class Application(object):
           print 'entrou true 1'
           return True
         graph_d[origem].destinos.remove(v)
-        self.not_disconnect(origem=v, destino=destino, graph_d=graph_d)
+        return self.not_disconnect(origem=v, destino=destino, graph_d=graph_d)
     else:
       for key in graph_d.keys():
         if origem in graph_d[key].destinos:
@@ -173,8 +175,8 @@ class Application(object):
             print 'entrou true 2'
             return True
           graph_d[key].destinos.remove(origem)
-          self.not_disconnect(origem=key, destino=destino, graph_d=graph_d)
-
+          return self.not_disconnect(origem=key, destino=destino, graph_d=graph_d)
+  
   def printar(self):
     for k in self.records.keys():
       print 'index: %s | destinos: %s | pesos: %s' % (k, self.records[k].destinos, self.records[k].pesos)
