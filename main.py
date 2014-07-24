@@ -1,5 +1,5 @@
 import copy
-
+from collections import OrderedDict
 class Node(object):
   destinos = []
   pesos = []
@@ -18,13 +18,29 @@ class Application(object):
       elif v1 == -2:
         if self.is_eulerian():
           self.eu_trail()
+          return
         else:
           print 'Is NOT Eulerian'
-          return 
+          return
+      elif v1 == -3
+        o,f = self.check_odd()
+        self.opt_trail(origin=o,final=f)
+        return
       v2 = int(raw_input())
       peso = int(raw_input())
 
       self.create(v1, v2, peso)
+
+  def check_odd(self):
+    v1 = v2 = None
+    for r in self.vertices.keys():
+      if self.vertices[r] % 2 != 0:
+        if not v1:
+          v1 = r
+        else:
+          v2 = r
+    
+    return v1,v2
 
   def create(self, v1, v2, peso):
     # import pdb; pdb.set_trace()
@@ -176,7 +192,42 @@ class Application(object):
             return True
           graph_d[key].destinos.remove(origem)
           return self.not_disconnect(origem=key, destino=destino, graph_d=graph_d)
+
+  def dijkstra(origin,final=None):
+    D = {}  # dictionary of final distances
+    P = {}  # dictionary of predecessors
+    Q = OrderedDict()   # est.dist. of non-final vert.
+    Q[origin] = 0
+    
+    for v in Q:
+      D[v] = Q[v]
+      if v == final:
+        break
+
+      for w in self.records[v]:
+        index = self.records[v].destinos.index(w)
+        weight = D[v] + self.records[v].pesos(index)
+    
+        if w not in Q or weight < Q[w]:
+          Q[w] = weight
+          P[w] = v
+    
+    return P
   
+  def opt_trail(origin,final):
+    P = self.dijkstra(origin,final)
+    trail = []
+    while True:
+      trail.append(end)
+      if end == start:
+        break
+      end = P[end]
+    
+    import pdb;pdb.set_trace()
+    path.reverse()
+    return trail
+
+ 
   def printar(self):
     for k in self.records.keys():
       print 'index: %s | destinos: %s | pesos: %s' % (k, self.records[k].destinos, self.records[k].pesos)
