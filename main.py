@@ -112,6 +112,7 @@ class Application(object):
         for v in graph[v0].destinos:
           graph_aux = copy.deepcopy(graph) # deep copy to pass graph_aux per params
           graph_aux[v0].destinos.remove(v)
+          print 'enviou pro not_disconnect [1]'
           if self.not_disconnect(origem=v0, destino=v, graph_d=graph_aux):
             print 'Inseriu pq nao desconecta'
             C.append(v)
@@ -137,6 +138,7 @@ class Application(object):
             print 'Inseriu no else'
             graph_aux = copy.deepcopy(graph) # deep copy to pass graph_aux per params
             graph_aux[key].destinos.remove(v0)
+            print 'enviou pro not_disconnect [2]'
             if self.not_disconnect(origem=key, destino=v0, graph_d=graph_aux):          
               C.append(key)
               index = graph[key].destinos.index(v0)
@@ -155,10 +157,12 @@ class Application(object):
 
     if origem in graph_d.keys():
       if len(graph_d[origem].destinos) == 0:
+        print 'entrou false [1]'
         return False
       
       for v in graph_d[origem].destinos: 
         if v == destino:
+          print 'entrou true 1'
           return True
         graph_d[origem].destinos.remove(v)
         self.not_disconnect(origem=v, destino=destino, graph_d=graph_d)
@@ -166,10 +170,10 @@ class Application(object):
       for key in graph_d.keys():
         if origem in graph_d[key].destinos:
           if key == destino:
+            print 'entrou true 2'
             return True
           graph_d[key].destinos.remove(origem)
           self.not_disconnect(origem=key, destino=destino, graph_d=graph_d)
-      return False # if run all keys and did not find
 
   def printar(self):
     for k in self.records.keys():
