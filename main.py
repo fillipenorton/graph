@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
+
 import copy
 from collections import OrderedDict
+
 class Node(object):
   destinos = []
   pesos = []
@@ -24,7 +27,7 @@ class Application(object):
           return
       elif v1 == -3:
         o,f = self.check_odd()
-        self.opt_trail(origin=o,final=f)
+        self.opt_trail(origin=o, final=f)
         return
       v2 = int(raw_input())
       peso = int(raw_input())
@@ -39,7 +42,7 @@ class Application(object):
           v1 = r
         else:
           v2 = r
-    
+
     return v1,v2
 
   def create(self, v1, v2, peso):
@@ -100,7 +103,7 @@ class Application(object):
           return True
 
     return False
-  
+
   def is_eulerian(self):
     for r in self.vertices.keys():
       if self.vertices[r] % 2 != 0:
@@ -124,7 +127,7 @@ class Application(object):
           graph[v0].pesos.pop(index)
           self.countdown_degree(v1=v0, v2=v)
           self.eu_trail(C=C, graph=graph, v0=v)
-      else: 
+      else:
         graph_aux = copy.deepcopy(graph) # deep copy to pass graph_aux per params
         for v in graph[v0].destinos:
           #import pdb;pdb.set_trace()
@@ -135,7 +138,7 @@ class Application(object):
             print 'Inseriu pq nao desconecta'
             C.append(v)
             index = graph[v0].destinos.index(v)
-            graph[v0].destinos.remove(v) # remove from Graph only if 
+            graph[v0].destinos.remove(v) # remove from Graph only if
             graph[v0].pesos.pop(index)
             self.countdown_degree(v1=v0, v2=v)
             self.eu_trail(C=C, graph=graph, v0=v)
@@ -157,7 +160,7 @@ class Application(object):
             graph_aux = copy.deepcopy(graph) # deep copy to pass graph_aux per params
             graph_aux[key].destinos.remove(v0)
             print 'enviou pro not_disconnect [2]'
-            if self.not_disconnect(origem=key, destino=v0, graph_d=graph_aux):          
+            if self.not_disconnect(origem=key, destino=v0, graph_d=graph_aux):
               C.append(key)
               index = graph[key].destinos.index(v0)
               graph[key].destinos.remove(v0)
@@ -177,8 +180,8 @@ class Application(object):
       if len(graph_d[origem].destinos) == 0:
         print 'entrou false [1]'
         return False
-      
-      for v in graph_d[origem].destinos: 
+
+      for v in graph_d[origem].destinos:
         if v == destino:
           print 'entrou true 1'
           return True
@@ -198,37 +201,52 @@ class Application(object):
     P = {}  # dictionary of predecessors
     Q = OrderedDict()   # est.dist. of non-final vert.
     Q[origin] = 0
-    
+
     for v in Q:
+      print v
       D[v] = Q[v]
       if v == final:
         break
-      
-      import pdb;pdb.set_trace()
+      # import pdb; pdb.set_trace()
+      # o erro está acontecendo por que estamos tentando pegar o 'v'
+      # como chave, quando na verdade ele só está em destinos
+      if not v in self.records:
+        # ou seja, v passa a ser o índice primário
+        # isso garante que sempre vai haver self.records[v]
+        # e passo sec_index para caso precise busca ele no array
+        v, sec_index = self.find_value_in_destins(v)
+
       for w in self.records[v].destinos:
         index = self.records[v].destinos.index(w)
         weight = D[v] + self.records[v].pesos[index]
-    
+
         if w not in Q or weight < Q[w]:
           Q[w] = weight
           P[w] = v
-    
+
     return P
-  
-  def opt_trail(self, origin,final):
-    P = self.dijkstra(origin,final)
+
+  def opt_trail(self, origin, final):
+    P = self.dijkstra(origin, final)
     trail = []
     while True:
       trail.append(end)
       if end == start:
         break
       end = P[end]
-    
+
     import pdb;pdb.set_trace()
     path.reverse()
     return trail
 
- 
+  def find_value_in_destins(self, value):
+    # return a tuple, where first value is the key, and second value is the index
+    for r in self.records:
+      for d in self.records[r].destinos:
+        if value == d:
+          index = self.records[r].destinos.index(d)
+          return r, index
+
   def printar(self):
     for k in self.records.keys():
       print 'index: %s | destinos: %s | pesos: %s' % (k, self.records[k].destinos, self.records[k].pesos)
