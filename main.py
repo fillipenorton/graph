@@ -2,6 +2,7 @@
 
 import copy
 from priodict import priorityDictionary
+from itertools import cycle
 
 class Node(object):
   destinos = []
@@ -29,6 +30,11 @@ class Application(object):
         o,f = self.check_odd()
         self.optimal_trail(origin=o, final=f)
         return
+      elif v1 == -4:
+        self.duplicate_edge()
+        return
+
+
       v2 = int(raw_input())
       peso = int(raw_input())
 
@@ -246,9 +252,33 @@ class Application(object):
         break
       final = P[final]
 
-    import pdb;pdb.set_trace()
-    trail.reverse()
+    trail.reverse() 
     return trail
+
+  def duplicate_edge(self):
+    graph_duplicated = copy.deepcopy(self.records)
+    o,f = self.check_odd()
+    path = self.optimal_trail(origin=o, final=f)
+
+    for idx, p in enumerate(path):
+      if idx+1 == len(path): break
+      
+      nextelem = path[(idx + 1) % len(path)]
+      
+      if p in graph_duplicated.keys():
+
+        graph_duplicated[p].destinos.append(nextelem)
+      else:
+        print 'nova key'
+        node = Node()
+        node.destinos = [nextelem]
+        node.pesos = [0]
+        graph_duplicated[p] = node
+
+      self.update_degree(p, nextelem)
+    
+    import pdb;pdb.set_trace()
+
 
   def printar(self):
     for k in self.records.keys():
