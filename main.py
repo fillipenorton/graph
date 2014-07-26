@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import copy
-from collections import OrderedDict
+from priodict import priorityDictionary
 
 class Node(object):
   destinos = []
@@ -27,7 +27,7 @@ class Application(object):
           return
       elif v1 == -3:
         o,f = self.check_odd()
-        self.opt_trail(origin=o, final=f)
+        self.optimal_trail(origin=o, final=f)
         return
       v2 = int(raw_input())
       peso = int(raw_input())
@@ -195,50 +195,7 @@ class Application(object):
             return True
           graph_d[key].destinos.remove(origem)
           return self.not_disconnect(origem=key, destino=destino, graph_d=graph_d)
-
-  def dijkstra(self, origin,final=None):
-    D = {}  # dictionary of final distances
-    P = {}  # dictionary of predecessors
-    Q = OrderedDict()   # est.dist. of non-final vert.
-    Q[origin] = 0
-
-    for v in Q:
-      print v
-      D[v] = Q[v]
-      if v == final:
-        break
-      # import pdb; pdb.set_trace()
-      # o erro está acontecendo por que estamos tentando pegar o 'v'
-      # como chave, quando na verdade ele só está em destinos
-      if not v in self.records:
-        # ou seja, v passa a ser o índice primário
-        # isso garante que sempre vai haver self.records[v]
-        # e passo sec_index para caso precise busca ele no array
-        v, sec_index = self.find_value_in_destins(v)
-
-      for w in self.records[v].destinos:
-        index = self.records[v].destinos.index(w)
-        weight = D[v] + self.records[v].pesos[index]
-
-        if w not in Q or weight < Q[w]:
-          Q[w] = weight
-          P[w] = v
-
-    return P
-
-  def opt_trail(self, origin, final):
-    P = self.dijkstra(origin, final)
-    trail = []
-    while True:
-      trail.append(end)
-      if end == start:
-        break
-      end = P[end]
-
-    import pdb;pdb.set_trace()
-    path.reverse()
-    return trail
-
+  
   def find_value_in_destins(self, value):
     # return a tuple, where first value is the key, and second value is the index
     for r in self.records:
@@ -246,6 +203,52 @@ class Application(object):
         if value == d:
           index = self.records[r].destinos.index(d)
           return r, index
+  
+  def dijkstra(self, origin,final=None):
+    D = {}  # dictionary of final distances
+    P = {}  # dictionary of predecessors
+    Q = priorityDictionary()   # est.dist. of non-final vert.
+    Q[origin] = 0
+
+    for v in Q:
+      print v
+      D[v] = Q[v]
+
+      if v == final:
+        break
+
+      if v in self.records:
+        for w in self.records[v].destinos:
+          index = self.records[v].destinos.index(w)
+          weight = D[v] + self.records[v].pesos[index]
+
+          if w not in Q or weight < Q[w]:
+            Q[w] = weight
+            P[w] = v
+      else:
+        for w in self.records:
+          if v in self.records[w].destinos:
+            index = self.records[w].destinos.index(v)
+            weight = D[v] + self.records[w].pesos[index]
+
+            if w not in Q or weight < Q[w]:
+              Q[w] = weight
+              P[w] = v         
+
+    return P
+
+  def optimal_trail(self, origin, final):
+    P = self.dijkstra(origin, final)
+    trail = []
+    while True:
+      trail.append(final)
+      if final == origin:
+        break
+      final = P[final]
+
+    import pdb;pdb.set_trace()
+    trail.reverse()
+    return trail
 
   def printar(self):
     for k in self.records.keys():

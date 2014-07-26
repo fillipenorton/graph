@@ -13,11 +13,8 @@ def dijkstra(G,start,end=None):
 		
 		for w in G[v]:
 			vwLength = D[v] + G[v][w]
-			if w in D:
-				if vwLength < D[w]:
-					raise ValueError, \
-  
-			elif w not in Q or vwLength < Q[w]:
+ 
+			if w not in Q or vwLength < Q[w]:
 				Q[w] = vwLength
 				P[w] = v
 	
