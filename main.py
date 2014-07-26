@@ -140,7 +140,7 @@ class Application(object):
           graph_aux[v0].destinos.remove(v)
           print 'enviou pro not_disconnect [1]'
           graph_d = copy.deepcopy(graph_aux)
-          if self.not_disconnect(origem=v0, destino=v, graph_d=graph_d):
+          if (v in graph_aux[v0].destinos) or (self.not_disconnect(origem=v0, destino=v, graph_d=graph_d)):
             print 'Inseriu pq nao desconecta'
             C.append(v)
             index = graph[v0].destinos.index(v)
@@ -162,11 +162,12 @@ class Application(object):
             self.eu_trail(C=C, graph=graph, v0=key)
             break
           else:
-            print 'Inseriu no else'
+            print 'Veio no else'
             graph_aux = copy.deepcopy(graph) # deep copy to pass graph_aux per params
             graph_aux[key].destinos.remove(v0)
             print 'enviou pro not_disconnect [2]'
-            if self.not_disconnect(origem=key, destino=v0, graph_d=graph_aux):
+            if (v0 in graph_aux[key].destinos) or self.not_disconnect(origem=key, destino=v0, graph_d=graph_aux):
+              print 'Inseriu no not_disconnect [2]'
               C.append(key)
               index = graph[key].destinos.index(v0)
               graph[key].destinos.remove(v0)
@@ -217,7 +218,6 @@ class Application(object):
     Q[origin] = 0
 
     for v in Q:
-      print v
       D[v] = Q[v]
 
       if v == final:
@@ -252,11 +252,12 @@ class Application(object):
         break
       final = P[final]
 
-    trail.reverse() 
+    trail.reverse()
+    print trail 
     return trail
 
   def duplicate_edge(self):
-    graph_duplicated = copy.deepcopy(self.records)
+    # graph_duplicated = copy.deepcopy(self.records)
     o,f = self.check_odd()
     path = self.optimal_trail(origin=o, final=f)
 
@@ -265,19 +266,18 @@ class Application(object):
       
       nextelem = path[(idx + 1) % len(path)]
       
-      if p in graph_duplicated.keys():
+      if p in self.records.keys():
+        self.records[p].destinos.append(nextelem)
+        self.records[p].pesos.append(0)
 
-        graph_duplicated[p].destinos.append(nextelem)
       else:
-        print 'nova key'
-        node = Node()
-        node.destinos = [nextelem]
-        node.pesos = [0]
-        graph_duplicated[p] = node
-
+        self.records[nextelem].destinos.append(p)
+        self.records[nextelem].pesos.append(0)
+      
       self.update_degree(p, nextelem)
     
-    import pdb;pdb.set_trace()
+    import pdb;pdb.set_trace()      
+    self.eu_trail()
 
 
   def printar(self):
