@@ -221,23 +221,18 @@ class Application(object):
           graph_d[key].destinos.remove(origem)
           return self.not_disconnect(origem=key, destino=destino, graph_d=graph_d)
   
-  def find_value_in_destins(self, value):
-    # return a tuple, where first value is the key, and second value is the index
-    for r in self.records:
-      for d in self.records[r].destinos:
-        if value == d:
-          index = self.records[r].destinos.index(d)
-          return r, index
   
-  def dijkstra(self, origin,final=None):
+  def dijkstra(self, origin, final=None):
+    # G = self.transform_dict()
     D = {}  # dictionary of final distances
     P = {}  # dictionary of predecessors
-    Q = priorityDictionary()   # est.dist. of non-final vert.
+    Q = priorityDictionary()  # estimated distances of non-final vertices
     Q[origin] = 0
 
     for v in Q:
+      # import pdb;pdb.set_trace()
       D[v] = Q[v]
-
+      print v
       if v == final:
         break
 
@@ -249,17 +244,27 @@ class Application(object):
           if w not in Q or weight < Q[w]:
             Q[w] = weight
             P[w] = v
-      else:
-        for w in self.records:
-          if v in self.records[w].destinos:
-            index = self.records[w].destinos.index(v)
-            weight = D[v] + self.records[w].pesos[index]
+      for w in self.records:
+        if v in self.records[w].destinos:
+          index = self.records[w].destinos.index(v)
+          weight = D[v] + self.records[w].pesos[index]
 
-            if w not in Q or weight < Q[w]:
-              Q[w] = weight
-              P[w] = v         
+          if w not in Q or weight < Q[w]:
+            Q[w] = weight
+            P[w] = v
 
     return P
+
+  def transform_dict(self):
+    # v: Node.destinos, Node.pesos
+    graph = {}
+    for r in self.records:
+      obj_dict = {}
+      for idx,d in enumerate(self.records[r].destinos):
+        obj_dict[d] = self.records[r].pesos[idx]
+      graph[r] = obj_dict
+    print graph
+    return graph
 
   def optimal_trail(self, origin, final):
     P = self.dijkstra(origin, final)
