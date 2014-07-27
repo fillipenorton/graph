@@ -124,7 +124,12 @@ class Application(object):
       self.vertices_degree = copy.deepcopy(self.vertices)
 
     if v0 in graph.keys(): # v0 is between keys
+      if len(graph[v0].destinos) == 0:
+        graph.pop(v0, None)
+        self.eu_trail(C=C, graph=graph, v0=v0)
+
       if len(graph[v0].destinos) == 1:
+          # import pdb;pdb.set_trace()          
           print 'Inseriu pq tem apenas um destino'
           v = graph[v0].destinos[0]
           C.append(v)
@@ -133,6 +138,7 @@ class Application(object):
           graph[v0].pesos.pop(index)
           self.countdown_degree(v1=v0, v2=v)
           self.eu_trail(C=C, graph=graph, v0=v)
+      
       else:
         graph_aux = copy.deepcopy(graph) # deep copy to pass graph_aux per params
         for v in graph[v0].destinos:
@@ -179,14 +185,26 @@ class Application(object):
     import pdb;pdb.set_trace()
     return C
 
+
+  def into_deep_side(self, value, graph_d):
+    for key in graph_d.keys():
+      if value in graph_d[key].destinos:
+        return True
+
+    return False
+
   def not_disconnect(self, origem, destino, graph_d):
     # import pdb;pdb.set_trace()
     print 'origem: %s destino %s' % (origem,destino)
 
     if origem in graph_d.keys():
       if len(graph_d[origem].destinos) == 0:
-        print 'entrou false [1]'
-        return False
+        if not self.into_deep_side(origem, graph_d):
+          print 'entrou false [1]'
+          return False
+        else:
+          graph_d.pop(origem, None)
+          return self.not_disconnect(origem=origem, destino=destino, graph_d=graph_d)
 
       for v in graph_d[origem].destinos:
         if v == destino:
