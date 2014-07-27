@@ -2,7 +2,9 @@
 
 import copy
 from priodict import priorityDictionary
-from itertools import cycle
+import itertools
+from heapq import nsmallest
+
 
 class Node(object):
   destinos = []
@@ -30,8 +32,13 @@ class Application(object):
         o,f = self.check_odd()
         self.optimal_trail(origin=o, final=f)
         return
+      
       elif v1 == -4:
         self.duplicate_edge()
+        return
+      
+      elif v1 == -5:
+        self.step3()
         return
 
 
@@ -40,7 +47,15 @@ class Application(object):
 
       self.create(v1, v2, peso)
 
-  def check_odd(self):
+
+  def odd_vertex_set(self): # retorna quantidade de nós que tem grau ímpar
+    a=[]
+    for r in self.vertices.keys():
+      if self.vertices[r] % 2 != 0:
+        a.append(r)
+    return a
+
+  def check_odd(self): # retorna vértices que tem grau ímpar. Nesse caso só podem ter 2
     v1 = v2 = None
     for r in self.vertices.keys():
       if self.vertices[r] % 2 != 0:
@@ -253,36 +268,31 @@ class Application(object):
             Q[w] = weight
             P[w] = v
 
-    return P
+    return P, D
 
-  def transform_dict(self):
-    # v: Node.destinos, Node.pesos
-    graph = {}
-    for r in self.records:
-      obj_dict = {}
-      for idx,d in enumerate(self.records[r].destinos):
-        obj_dict[d] = self.records[r].pesos[idx]
-      graph[r] = obj_dict
-    print graph
-    return graph
 
-  def optimal_trail(self, origin, final):
-    P = self.dijkstra(origin, final)
+  def optimal_trail(self, origin, final, weight=None):
+    P, W = self.dijkstra(origin, final)
     trail = []
+
     while True:
       trail.append(final)
       if final == origin:
         break
       final = P[final]
 
-    trail.reverse()
-    print trail 
-    return trail
+    if weight:
+      # import pdb;pdb.set_trace()
 
-  def duplicate_edge(self):
+      return trail, sum(W)
+    else:
+      return trail
+
+  def duplicate_edge(self, path=None):
     # graph_duplicated = copy.deepcopy(self.records)
-    o,f = self.check_odd()
-    path = self.optimal_trail(origin=o, final=f)
+    if not path:
+      o,f = self.check_odd()
+      path = self.optimal_trail(origin=o, final=f)
 
     for idx, p in enumerate(path):
       if idx+1 == len(path): break
@@ -299,10 +309,29 @@ class Application(object):
       
       self.update_degree(p, nextelem)
     
+
+  def step3(self):
+    odd_array = self.odd_vertex_set()
+    trails = []
+    tuples = itertools.combinations(odd_array, 2)
+
+    # odd_array agora tem tuplas combinadads com os vértices ímpares
+    
+    for l in list(tuples):
+      path, weight = self.optimal_trail(l[0], l[1], weight=True)
+      obj = {
+        weight: path
+      }
+      trails.append(obj)
+    smallers = nsmallest(len(odd_array)-1, trails)
+    
+    for m in smallers:
+      self.duplicate_edge(path=m.values()[0])
+
     import pdb;pdb.set_trace()      
     self.eu_trail()
 
-
+  
   def printar(self):
     for k in self.records.keys():
       print 'index: %s | destinos: %s | pesos: %s' % (k, self.records[k].destinos, self.records[k].pesos)
