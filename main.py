@@ -144,7 +144,6 @@ class Application(object):
         self.eu_trail(C=C, graph=graph, v0=v0)
 
       if len(graph[v0].destinos) == 1:
-          # import pdb;pdb.set_trace()
           print 'Inseriu pq tem apenas um destino'
           v = graph[v0].destinos[0]
           C.append(v)
@@ -157,7 +156,6 @@ class Application(object):
       else:
         graph_aux = copy.deepcopy(graph) # deep copy to pass graph_aux per params
         for v in graph[v0].destinos:
-          #import pdb;pdb.set_trace()
           graph_aux[v0].destinos.remove(v)
           print 'enviou pro not_disconnect [1]'
           graph_d = copy.deepcopy(graph_aux)
@@ -285,20 +283,21 @@ class Application(object):
       temp = prev[temp]
     trav.reverse()
     trav.append(target)
-    print trav
-    return trav
+
+    weight = reduce(
+        lambda x, y: x + y,
+      trav)
+
+    return trav, weight
 
   def optimal_trail(self, origin, final, weight=None):
-    trail = self.dijkstra(origin, final)
-
-    return trail
+    return self.dijkstra(origin, final)
 
   def duplicate_edge(self, path=None):
     # graph_duplicated = copy.deepcopy(self.records)
     if not path:
-      print 'nao tem path'
       o,f = self.check_odd()
-      path = self.optimal_trail(origin=o, final=f)
+      path, weight = self.optimal_trail(origin=o, final=f)
 
     for idx, p in enumerate(path):
       if idx+1 == len(path): break
@@ -315,7 +314,7 @@ class Application(object):
 
       self.update_degree(p, nextelem)
 
-    import pdb;pdb.set_trace()
+    # import pdb;pdb.set_trace()
     self.eu_trail()
 
 
@@ -323,7 +322,6 @@ class Application(object):
     odd_array = self.odd_vertex_set()
     trails = []
     tuples = itertools.combinations(odd_array, 2)
-
     # odd_array agora tem tuplas combinadads com os vértices ímpares
 
     for l in list(tuples):
@@ -337,8 +335,8 @@ class Application(object):
     for m in smallers:
       self.duplicate_edge(path=m.values()[0])
 
-    import pdb;pdb.set_trace()
     self.eu_trail()
+    # import pdb; pdb.set_trace()
 
 
   def printar(self):
