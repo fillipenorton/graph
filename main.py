@@ -170,11 +170,25 @@ class Application(object):
             self.countdown_degree(v1=v0, v2=v)
             self.eu_trail(C=C, graph=graph, v0=v)
             break
-    else: # v0 is on the deep
-      for key in graph.keys():
-        if v0 in graph[key].destinos:
-          if self.vertices_degree[v0] == 1:
-            print 'Inseriu no else por 1 destino'
+          graph_aux[v0].destinos.append(v)
+    for key in graph.keys():
+      if v0 in graph[key].destinos:
+        if self.vertices_degree[v0] == 1:
+          print 'Inseriu no else por 1 destino'
+          C.append(key)
+          index = graph[key].destinos.index(v0)
+          graph[key].destinos.remove(v0)
+          graph[key].pesos.pop(index)
+          self.countdown_degree(v1=v0, v2=key)
+          self.eu_trail(C=C, graph=graph, v0=key)
+          break
+        else:
+          print 'Veio no else'
+          graph_aux = copy.deepcopy(graph) # deep copy to pass graph_aux per params
+          graph_aux[key].destinos.remove(v0)
+          print 'enviou pro not_disconnect [2]'
+          if (v0 in graph_aux[key].destinos) or self.not_disconnect(origem=key, destino=v0, graph_d=graph_aux):
+            print 'Inseriu no not_disconnect [2]'
             C.append(key)
             index = graph[key].destinos.index(v0)
             graph[key].destinos.remove(v0)
@@ -182,26 +196,13 @@ class Application(object):
             self.countdown_degree(v1=v0, v2=key)
             self.eu_trail(C=C, graph=graph, v0=key)
             break
-          else:
-            print 'Veio no else'
-            graph_aux = copy.deepcopy(graph) # deep copy to pass graph_aux per params
-            graph_aux[key].destinos.remove(v0)
-            print 'enviou pro not_disconnect [2]'
-            if (v0 in graph_aux[key].destinos) or self.not_disconnect(origem=key, destino=v0, graph_d=graph_aux):
-              print 'Inseriu no not_disconnect [2]'
-              C.append(key)
-              index = graph[key].destinos.index(v0)
-              graph[key].destinos.remove(v0)
-              graph[key].pesos.pop(index)
-              self.countdown_degree(v1=v0, v2=key)
-              self.eu_trail(C=C, graph=graph, v0=key)
-              break
 
     import pdb;pdb.set_trace()
     return C
 
 
   def into_deep_side(self, value, graph_d):
+    import pdb;pdb.set_trace()
     for key in graph_d.keys():
       if value in graph_d[key].destinos:
         return True
@@ -245,7 +246,6 @@ class Application(object):
     Q[origin] = 0
 
     for v in Q:
-      # import pdb;pdb.set_trace()
       D[v] = Q[v]
       print v
       if v == final:
@@ -259,6 +259,7 @@ class Application(object):
           if w not in Q or weight < Q[w]:
             Q[w] = weight
             P[w] = v
+      
       for w in self.records:
         if v in self.records[w].destinos:
           index = self.records[w].destinos.index(v)
@@ -274,6 +275,7 @@ class Application(object):
   def optimal_trail(self, origin, final, weight=None):
     P, W = self.dijkstra(origin, final)
     trail = []
+    import pdb;pdb.set_trace()      
 
     while True:
       trail.append(final)
@@ -291,6 +293,7 @@ class Application(object):
   def duplicate_edge(self, path=None):
     # graph_duplicated = copy.deepcopy(self.records)
     if not path:
+      print 'nao tem path'
       o,f = self.check_odd()
       path = self.optimal_trail(origin=o, final=f)
 
@@ -308,6 +311,8 @@ class Application(object):
         self.records[nextelem].pesos.append(0)
       
       self.update_degree(p, nextelem)
+    import pdb;pdb.set_trace()      
+    self.eu_trail()
     
 
   def step3(self):
