@@ -32,11 +32,11 @@ class Application(object):
         o,f = self.check_odd()
         self.optimal_trail(origin=o, final=f)
         return
-      
+
       elif v1 == -4:
         self.duplicate_edge()
         return
-      
+
       elif v1 == -5:
         self.step3()
         return
@@ -144,7 +144,7 @@ class Application(object):
         self.eu_trail(C=C, graph=graph, v0=v0)
 
       if len(graph[v0].destinos) == 1:
-          # import pdb;pdb.set_trace()          
+          # import pdb;pdb.set_trace()
           print 'Inseriu pq tem apenas um destino'
           v = graph[v0].destinos[0]
           C.append(v)
@@ -153,7 +153,7 @@ class Application(object):
           graph[v0].pesos.pop(index)
           self.countdown_degree(v1=v0, v2=v)
           self.eu_trail(C=C, graph=graph, v0=v)
-      
+
       else:
         graph_aux = copy.deepcopy(graph) # deep copy to pass graph_aux per params
         for v in graph[v0].destinos:
@@ -161,7 +161,7 @@ class Application(object):
           graph_aux[v0].destinos.remove(v)
           print 'enviou pro not_disconnect [1]'
           graph_d = copy.deepcopy(graph_aux)
-          if (v in graph_aux[v0].destinos) or (self.not_disconnect(origem=v0, destino=v, graph_d=graph_d)):
+          if (v in graph_aux[v0].destinos) or not (self.not_disconnect(origem=v0, destino=v, graph_d=graph_d)):
             print 'Inseriu pq nao desconecta'
             C.append(v)
             index = graph[v0].destinos.index(v)
@@ -214,6 +214,7 @@ class Application(object):
 
     if origem in graph_d.keys():
       if len(graph_d[origem].destinos) == 0:
+        import pdb; pdb.set_trace()
         if not self.into_deep_side(origem, graph_d):
           print 'entrou false [1]'
           return False
@@ -235,8 +236,8 @@ class Application(object):
             return True
           graph_d[key].destinos.remove(origem)
           return self.not_disconnect(origem=key, destino=destino, graph_d=graph_d)
-  
-  
+
+
   def dijkstra(self, origin, final=None):
     # G = self.transform_dict()
     D = {}  # dictionary of final distances
@@ -270,11 +271,56 @@ class Application(object):
 
     return P, D
 
+  def transform_dict(self):
+    graph_aux = {}
+
+    for v in self.vertices:
+      graph_aux[v] = {}
+      if v in self.records:
+        for idx, x in enumerate(self.records[v].destinos):
+          index = self.records[v].destinos.index(x)
+          weight = self.records[v].pesos[index]
+          obj_dict = {}
+          obj_dict[x] = self.records[v].pesos[idx]
+          graph_aux[v].update(obj_dict)
+
+    for r in self.records:
+      for idx, d in enumerate(self.records[r].destinos):
+        index = self.records[r].destinos.index(d)
+        weight = self.records[r].pesos[index]
+        obj_dict = {}
+        obj_dict[self.records[r].destinos[idx]] = self.records[r].pesos[idx]
+        graph_aux[d].update(obj_dict)
+
+    return graph_aux
+
+  def dijkstra_2(self, start, end):
+    G = self.transform_dict()
+
+    D = {}  # dictionary of final distances
+    P = {}  # dictionary of predecessors
+    Q = priorityDictionary()   # est.dist. of non-final vert.
+    Q[start] = 0
+
+    for v in Q:
+      D[v] = Q[v]
+      if v == end: break
+      print v
+      for w in G[v]:
+        if G[v]:
+          print 'tem G[v]'
+          vwLength = D[v] + G[v][w]
+
+          if w not in Q or vwLength < Q[w]:
+            Q[w] = vwLength
+            P[w] = v
+    import pdb; pdb.set_trace()
+    return D, P
 
   def optimal_trail(self, origin, final, weight=None):
-    P, W = self.dijkstra(origin, final)
+    P, W = self.dijkstra_2(origin, final)
     trail = []
-
+    import pdb; pdb.set_trace()
     while True:
       trail.append(final)
       if final == origin:
@@ -282,8 +328,6 @@ class Application(object):
       final = P[final]
 
     if weight:
-      # import pdb;pdb.set_trace()
-
       return trail, sum(W)
     else:
       return trail
@@ -296,9 +340,9 @@ class Application(object):
 
     for idx, p in enumerate(path):
       if idx+1 == len(path): break
-      
+
       nextelem = path[(idx + 1) % len(path)]
-      
+
       if p in self.records.keys():
         self.records[p].destinos.append(nextelem)
         self.records[p].pesos.append(0)
@@ -306,9 +350,9 @@ class Application(object):
       else:
         self.records[nextelem].destinos.append(p)
         self.records[nextelem].pesos.append(0)
-      
+
       self.update_degree(p, nextelem)
-    
+
 
   def step3(self):
     odd_array = self.odd_vertex_set()
@@ -316,7 +360,8 @@ class Application(object):
     tuples = itertools.combinations(odd_array, 2)
 
     # odd_array agora tem tuplas combinadads com os vértices ímpares
-    
+
+    import pdb; pdb.set_trace()
     for l in list(tuples):
       path, weight = self.optimal_trail(l[0], l[1], weight=True)
       obj = {
@@ -324,14 +369,14 @@ class Application(object):
       }
       trails.append(obj)
     smallers = nsmallest(len(odd_array)-1, trails)
-    
+
     for m in smallers:
       self.duplicate_edge(path=m.values()[0])
 
-    import pdb;pdb.set_trace()      
+    import pdb;pdb.set_trace()
     self.eu_trail()
 
-  
+
   def printar(self):
     for k in self.records.keys():
       print 'index: %s | destinos: %s | pesos: %s' % (k, self.records[k].destinos, self.records[k].pesos)
