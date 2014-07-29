@@ -283,11 +283,7 @@ class Application(object):
       temp = prev[temp]
     trav.reverse()
     trav.append(target)
-
-    weight = reduce(
-        lambda x, y: x + y,
-      trav)
-
+    weight = map(lambda z: dist[z], trav)[-1]
     return trav, weight
 
   def optimal_trail(self, origin, final, weight=None):
